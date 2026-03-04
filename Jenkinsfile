@@ -17,10 +17,9 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                // Agora o Jenkins roda o Maven nativamente.
-                // Ele vai achar o banco pelo nome do container na rede leal_finance_default
                 sh "chmod +x mvnw"
-                sh "./mvnw clean test -Dspring.profiles.active=test -Dspring.datasource.url=jdbc:postgresql://${DB_CONTAINER}:5432/financas_db"
+                // Adicionamos o parâmetro de encoding diretamente no comando para garantir
+                sh "./mvnw clean test -Dspring.profiles.active=test -Dspring.datasource.url=jdbc:postgresql://${DB_CONTAINER}:5432/financas_db -Dfile.encoding=UTF-8"
             }
         }
     }
