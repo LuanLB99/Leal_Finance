@@ -1,40 +1,32 @@
 pipeline {
     agent any
-
     environment {
-        // Nome da rede que criaremos para o teste
-        DB_NETWORK = "test-network-${BUILD_NUMBER}"
+        DB_CONTAINER = "db-test-${BUILD_NUMBER}"
     }
-
     stages {
         stage('Setup Environment') {
             steps {
-                // Cria uma rede isolada para esta execução
-                sh "docker network create ${DB_NETWORK}"
-                // Sobe o banco Postgres nessa rede
-                sh "docker run -d --name db-test-${BUILD_NUMBER} --network ${DB_NETWORK} -e POSTGRES_PASSWORD=minhasenha -e POSTGRES_DB=financas_db postgres:15"
+                // Remove se já existir (limpeza)
+                sh "docker rm -f ${DB_CONTAINER} || true"
+
+                // Sobe o banco na rede do PRÓPRIO JENKINS
+                // O Jenkins geralmente está na rede 'bridge' ou na rede do docker-compose
+                sh "docker run -d --name ${DB_CONTAINER} --network leal_finance_default -e POSTGRES_PASSWORD=minhasenha -e POSTGRES_DB=financas_db postgres:15"
             }
         }
 
         stage('Build & Test') {
             steps {
-                // Roda o Maven passando o perfil de teste e a rede do Docker
-                // Usamos uma imagem Maven para rodar os testes dentro da rede
-                sh """
-                docker run --rm --network ${DB_NETWORK} \
-                -v ${WORKSPACE}:/app -w /app \
-                maven:3.9-eclipse-temurin-21 \
-                mvn clean test -Dspring.profiles.active=test
-                """
+                // Agora o Jenkins roda o Maven nativamente.
+                // Ele vai achar o banco pelo nome do container na rede leal_finance_default
+                sh "chmod +x mvnw"
+                sh "./mvnw clean test -Dspring.profiles.active=test -Dspring.datasource.url=jdbc:postgresql://${DB_CONTAINER}:5432/financas_db"
             }
         }
     }
-
     post {
         always {
-            // Limpeza: remove o container do banco e a rede, não importa se deu erro ou sucesso
-            sh "docker rm -f db-test-${BUILD_NUMBER} || true"
-            sh "docker network rm ${DB_NETWORK} || true"
+            sh "docker rm -f ${DB_CONTAINER} || true"
         }
     }
 }
