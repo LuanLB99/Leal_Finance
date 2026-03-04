@@ -3,8 +3,24 @@ services:
     image: postgres:15
     container_name: financas-db
     environment:
-      - POSTGRES_USER=USER
-      - POSTGRES_PASSWORD=PASSWORD
-      - POSTGRES_DB=MYDB
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=minhasenha
+      - POSTGRES_DB=financas_db
+      - POSTGRES_HOST_AUTH_METHOD=trust
     ports:
-      - "5432:5432"
+      - "5433:5432"
+
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17 # Versão com Java 17 para seu Spring
+    container_name: jenkins-local
+    privileged: true
+    user: root
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock # Permite o Jenkins usar o Docker do seu PC
+
+volumes:
+    jenkins_data:
