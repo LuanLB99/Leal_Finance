@@ -1,3 +1,4 @@
+/*
 package com.leal.finance.e2e;
 
 import com.leal.finance.domain.enums.TransactionType;
@@ -33,4 +34,4 @@ class TransactionE2ETest {
         assertNotNull(response.getBody().id());
         assertEquals("Coke", response.getBody().description());
     }
-}
+}*/

@@ -17,10 +17,18 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                sh "chmod +x mvnw"
-                // Adicionamos o parâmetro de encoding diretamente no comando para garantir
-                sh "./mvnw clean test -Dspring.profiles.active=test -Dspring.datasource.url=jdbc:postgresql://${DB_CONTAINER}:5432/financas_db -Dfile.encoding=UTF-8"
-            }
+                    sh "chmod +x mvnw"
+                    // Aqui forçamos o Spring a usar o banco que o DOCKER acabou de subir
+                    // Mesmo que no arquivo properties esteja configurado outra coisa, o comando abaixo SOBRESCREVE
+                    sh """
+                    ./mvnw clean test \
+                    -Dspring.profiles.active=test \
+                    -Dspring.datasource.url=jdbc:postgresql://${DB_CONTAINER}:5432/financas_db \
+                    -Dspring.datasource.username=postgres \
+                    -Dspring.datasource.password=minhasenha \
+                    -Dfile.encoding=UTF-8
+                    """
+                }
         }
     }
     post {
