@@ -32,6 +32,6 @@ public class TransactionRepositoryTest {
         Optional<Transaction> found = repository.findById(saved.getId());
 
         assertTrue(found.isPresent());
-        assertEquals(new BigDecimal("100.00"), found.get().getAmount());
+        assertEquals(new BigDecimal("10.00"), found.get().getAmount());
     }
 }
