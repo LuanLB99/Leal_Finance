@@ -26,7 +26,14 @@ export function useDashboardMetrics(transactions: Transaction[], categories: Cat
 
   const byCategory = useMemo(() => groupExpensesByCategory(realized, categoryMap), [realized, categoryMap])
 
-  return { realized, upcoming, income, expense, balance, byCategory, categoryMap }
+  // `realized` vem em ordem crescente (útil para os cálculos acima). Para exibição,
+  // a transação mais recente (pela data em que ocorreu) deve aparecer primeiro.
+  const recentFirst = useMemo(
+    () => [...realized].sort((a, b) => b.occurrence_date.localeCompare(a.occurrence_date)),
+    [realized]
+  )
+
+  return { realized, recentFirst, upcoming, income, expense, balance, byCategory, categoryMap }
 }
 
 function sumByType(occurrences: Occurrence[], type: 'income' | 'expense') {

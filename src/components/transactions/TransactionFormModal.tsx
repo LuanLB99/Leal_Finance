@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { format } from 'date-fns'
 import { X } from 'lucide-react'
+import CurrencyInput from '../CurrencyInput'
 import type { TransactionInput } from '../../hooks/useTransactions'
 import type { Category, RecurrenceFrequency, TransactionType } from '../../types'
 
@@ -50,7 +51,7 @@ export default function TransactionFormModal({ mode, initialValues, categories, 
     <div className="modal-backdrop" onClick={onClose}>
       <form className="modal-card" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
         <div className="modal-header">
-          <h3>{mode === 'edit' ? 'Editar lançamento' : 'Novo lançamento'}</h3>
+          <h3>{mode === 'edit' ? 'Editar transação' : 'Nova transação'}</h3>
           <button type="button" className="btn-icon" onClick={onClose}>
             <X size={18} />
           </button>
@@ -80,15 +81,8 @@ export default function TransactionFormModal({ mode, initialValues, categories, 
         </label>
 
         <label>
-          Valor (R$)
-          <input
-            type="number"
-            min="0.01"
-            step="0.01"
-            value={form.amount || ''}
-            onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })}
-            required
-          />
+          Valor
+          <CurrencyInput value={form.amount} onChange={(amount) => setForm({ ...form, amount })} />
         </label>
 
         <label>

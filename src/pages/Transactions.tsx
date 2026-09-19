@@ -50,8 +50,13 @@ export default function Transactions() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Excluir este lançamento?')) return
+    if (!confirm('Excluir esta transação?')) return
     await deleteTransaction(id)
+  }
+
+  async function handleCancelRecurrence(tx: Transaction) {
+    if (!confirm('Cancelar as próximas repetições desta transação? As ocorrências passadas continuam registradas.')) return
+    await updateTransaction(tx.id, { recurrence_end_date: format(new Date(), 'yyyy-MM-dd') })
   }
 
   return (
@@ -59,8 +64,8 @@ export default function Transactions() {
       <div className="page-header">
         <h2>Transações</h2>
         <div className="page-header-actions">
-          <button className="btn btn-primary" onClick={() => setModal({ mode: 'create' })} type="button">
-            <Plus size={16} /> Novo lançamento
+          <button className="btn btn-primary hide-on-mobile" onClick={() => setModal({ mode: 'create' })} type="button">
+            <Plus size={16} /> Nova transação
           </button>
           <div className="mobile-only-avatar">
             <UserMenu />
@@ -90,7 +95,7 @@ export default function Transactions() {
       {loading ? (
         <p>Carregando...</p>
       ) : sorted.length === 0 ? (
-        <p className="empty-state">Nenhum lançamento ainda. Clique em "Novo lançamento" para começar.</p>
+        <p className="empty-state">Nenhuma transação ainda. Clique em "Nova transação" para começar.</p>
       ) : (
         <ul className="occurrence-list">
           {sorted.map((tx) => (
@@ -100,6 +105,7 @@ export default function Transactions() {
               category={categories.find((c) => c.id === tx.category_id)}
               onEdit={() => setModal({ mode: 'edit', transaction: tx })}
               onDelete={() => handleDelete(tx.id)}
+              onCancelRecurrence={() => handleCancelRecurrence(tx)}
             />
           ))}
         </ul>

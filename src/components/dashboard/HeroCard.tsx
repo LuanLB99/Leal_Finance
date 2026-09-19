@@ -79,12 +79,12 @@ export default function HeroCard({ period, onPeriodChange, balance, byCategory, 
       )}
 
       {slide === 1 && (
-        <div className="hero-slide">
+        <div className="hero-slide hero-slide-chart">
           <p className="hero-eyebrow">Gastos por categoria</p>
           {byCategory.length === 0 ? (
             <p className="empty-state">Nenhum gasto neste período.</p>
           ) : (
-            <CategoryPieChart data={byCategory} height={170} />
+            <CategoryPieChart data={byCategory} height={140} compact />
           )}
         </div>
       )}

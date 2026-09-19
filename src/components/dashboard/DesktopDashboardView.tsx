@@ -1,7 +1,9 @@
+import { useMemo, useState } from 'react'
 import PeriodSelector from '../PeriodSelector'
 import SummaryCards from './SummaryCards'
 import CategoryPieChart from './CategoryPieChart'
 import OccurrenceList from '../OccurrenceList'
+import CategoryFilterMenu, { ALL_CATEGORIES } from '../CategoryFilterMenu'
 import type { CategoryTotal } from '../../hooks/useDashboardMetrics'
 import type { Category, Occurrence, Period } from '../../types'
 
@@ -15,7 +17,7 @@ interface Props {
   balance: number
   byCategory: CategoryTotal[]
   upcoming: Occurrence[]
-  realized: Occurrence[]
+  recentFirst: Occurrence[]
   categoryMap: Map<string, Category>
 }
 
@@ -29,9 +31,16 @@ export default function DesktopDashboardView({
   balance,
   byCategory,
   upcoming,
-  realized,
+  recentFirst,
   categoryMap,
 }: Props) {
+  const [categoryFilter, setCategoryFilter] = useState(ALL_CATEGORIES)
+
+  const filteredTransactions = useMemo(() => {
+    if (categoryFilter === ALL_CATEGORIES) return recentFirst
+    return recentFirst.filter((o) => o.category_id === categoryFilter)
+  }, [recentFirst, categoryFilter])
+
   return (
     <div className="desktop-dashboard">
       <PeriodSelector period={period} reference={reference} onPeriodChange={onPeriodChange} onReferenceChange={onReferenceChange} />
@@ -44,7 +53,7 @@ export default function DesktopDashboardView({
           {byCategory.length === 0 ? (
             <p className="empty-state">Nenhum gasto neste período.</p>
           ) : (
-            <CategoryPieChart data={byCategory} showLegend />
+            <CategoryPieChart data={byCategory} />
           )}
         </div>
 
@@ -55,8 +64,15 @@ export default function DesktopDashboardView({
       </div>
 
       <div className="panel">
-        <h3>Lançamentos do período</h3>
-        <OccurrenceList items={realized} categoryMap={categoryMap} emptyMessage="Nenhum lançamento neste período." />
+        <div className="panel-header-row">
+          <h3>Transações do período</h3>
+          <CategoryFilterMenu
+            categories={Array.from(categoryMap.values())}
+            value={categoryFilter}
+            onChange={setCategoryFilter}
+          />
+        </div>
+        <OccurrenceList items={filteredTransactions} categoryMap={categoryMap} emptyMessage="Nenhuma transação encontrada." />
       </div>
     </div>
   )

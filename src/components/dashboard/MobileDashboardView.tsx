@@ -1,7 +1,11 @@
+import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { ListTree } from 'lucide-react'
 import GreetingHeader from './GreetingHeader'
 import HeroCard from './HeroCard'
 import SummaryCards from './SummaryCards'
 import OccurrenceList from '../OccurrenceList'
+import CategoryFilterMenu, { ALL_CATEGORIES } from '../CategoryFilterMenu'
 import type { CategoryTotal } from '../../hooks/useDashboardMetrics'
 import type { Category, Occurrence, Period } from '../../types'
 
@@ -13,7 +17,7 @@ interface Props {
   balance: number
   byCategory: CategoryTotal[]
   upcoming: Occurrence[]
-  realized: Occurrence[]
+  recentFirst: Occurrence[]
   categoryMap: Map<string, Category>
 }
 
@@ -25,9 +29,16 @@ export default function MobileDashboardView({
   balance,
   byCategory,
   upcoming,
-  realized,
+  recentFirst,
   categoryMap,
 }: Props) {
+  const [categoryFilter, setCategoryFilter] = useState(ALL_CATEGORIES)
+
+  const filteredTransactions = useMemo(() => {
+    if (categoryFilter === ALL_CATEGORIES) return recentFirst
+    return recentFirst.filter((o) => o.category_id === categoryFilter)
+  }, [recentFirst, categoryFilter])
+
   return (
     <div className="mobile-dashboard">
       <GreetingHeader />
@@ -44,8 +55,20 @@ export default function MobileDashboardView({
       <SummaryCards income={income} expense={expense} />
 
       <div className="panel">
-        <h3>Últimos lançamentos</h3>
-        <OccurrenceList items={realized} categoryMap={categoryMap} emptyMessage="Nenhum lançamento neste período." limit={8} />
+        <div className="panel-header-row">
+          <h3>Últimas transações</h3>
+          <div className="panel-header-icons">
+            <Link to="/transacoes" className="panel-filter-btn" title="Ver todas as transações">
+              <ListTree size={16} />
+            </Link>
+            <CategoryFilterMenu
+              categories={Array.from(categoryMap.values())}
+              value={categoryFilter}
+              onChange={setCategoryFilter}
+            />
+          </div>
+        </div>
+        <OccurrenceList items={filteredTransactions} categoryMap={categoryMap} emptyMessage="Nenhuma transação encontrada." limit={8} />
       </div>
     </div>
   )

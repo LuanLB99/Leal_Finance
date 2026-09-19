@@ -7,12 +7,19 @@
 drop trigger if exists on_auth_user_created_categories on auth.users;
 drop function if exists public.handle_new_user_categories();
 
--- 2) Limpa categorias antigas (criadas por usuário/teste) e a coluna de dono
+-- 2) Remove as policies antigas ANTES de mexer na coluna user_id (elas dependem dela)
+drop policy if exists "categories_select_own" on public.categories;
+drop policy if exists "categories_insert_own" on public.categories;
+drop policy if exists "categories_update_own" on public.categories;
+drop policy if exists "categories_delete_own" on public.categories;
+
+-- 3) Limpa categorias antigas (criadas por usuário/teste) e a coluna de dono
 truncate table public.categories restart identity cascade;
 alter table public.categories drop column if exists user_id;
+alter table public.categories drop constraint if exists categories_name_key;
 alter table public.categories add constraint categories_name_key unique (name);
 
--- 3) Insere o conjunto único e global de categorias
+-- 4) Insere o conjunto único e global de categorias
 insert into public.categories (name, icon, color, type) values
   ('Alimentação', 'utensils', '#f97316', 'expense'),
   ('Transporte', 'car', '#3b82f6', 'expense'),
@@ -28,23 +35,19 @@ insert into public.categories (name, icon, color, type) values
   ('Presente', 'gift', '#d946ef', 'both'),
   ('Outros', 'circle-ellipsis', '#6b7280', 'both');
 
--- 3.5) Reforça: revoga os grants de escrita que a versão anterior deu por usuário
+-- 5) Reforça: revoga os grants de escrita que a versão anterior deu por usuário
 revoke insert, update, delete on public.categories from anon, authenticated;
 
--- 4) RLS: qualquer usuário autenticado pode LER; ninguém além do admin (via SQL Editor,
+-- 6) RLS: qualquer usuário autenticado pode LER; ninguém além do admin (via SQL Editor,
 -- que roda como postgres e ignora RLS) pode inserir/editar/excluir.
-drop policy if exists "categories_select_own" on public.categories;
-drop policy if exists "categories_insert_own" on public.categories;
-drop policy if exists "categories_update_own" on public.categories;
-drop policy if exists "categories_delete_own" on public.categories;
-
+drop policy if exists "categories_select_all" on public.categories;
 create policy "categories_select_all" on public.categories
   for select using (auth.role() = 'authenticated');
 
 -- Nenhuma policy de insert/update/delete é criada de propósito:
 -- com RLS ativo e sem policy para essas ações, anon/authenticated nunca conseguem escrever.
 
--- 5) Para adicionar/editar/remover uma categoria no futuro, use o SQL Editor, por exemplo:
+-- 7) Para adicionar/editar/remover uma categoria no futuro, use o SQL Editor, por exemplo:
 -- insert into public.categories (name, icon, color, type) values ('Pets', 'dog', '#a855f7', 'expense');
 -- update public.categories set icon = 'plane' where name = 'Lazer';
 -- delete from public.categories where name = 'Outros';

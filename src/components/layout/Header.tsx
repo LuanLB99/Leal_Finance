@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, ListTree, Brain } from 'lucide-react'
+import { LayoutDashboard, ListTree, LineChart, Brain } from 'lucide-react'
 import UserMenu from '../UserMenu'
 import HeaderSearch from './HeaderSearch'
 
@@ -18,6 +18,9 @@ export default function Header() {
         </NavLink>
         <NavLink to="/transacoes" className={navLinkClass}>
           <ListTree size={18} /> Transações
+        </NavLink>
+        <NavLink to="/projecao" className={navLinkClass}>
+          <LineChart size={18} /> Projeção
         </NavLink>
       </nav>
       <HeaderSearch />

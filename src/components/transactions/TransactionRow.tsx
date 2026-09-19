@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import { Pencil, Trash2 } from 'lucide-react'
+import { CalendarX2, Pencil, Trash2 } from 'lucide-react'
 import { CategoryIcon } from '../../lib/icons'
 import { formatCurrency } from '../../lib/format'
 import type { Category, Transaction } from '../../types'
@@ -9,9 +9,15 @@ interface Props {
   category?: Category
   onEdit: () => void
   onDelete: () => void
+  onCancelRecurrence: () => void
 }
 
-export default function TransactionRow({ transaction, category, onEdit, onDelete }: Props) {
+export default function TransactionRow({ transaction, category, onEdit, onDelete, onCancelRecurrence }: Props) {
+  const today = format(new Date(), 'yyyy-MM-dd')
+  const isScheduled = transaction.date > today
+  const canCancelRecurrence =
+    transaction.is_recurring && (!transaction.recurrence_end_date || transaction.recurrence_end_date > today)
+
   return (
     <li className="occurrence-item">
       <span className="occurrence-icon" style={{ color: category?.color }}>
@@ -20,7 +26,7 @@ export default function TransactionRow({ transaction, category, onEdit, onDelete
       <div className="occurrence-info">
         <span className="occurrence-desc">
           {transaction.description}
-          {transaction.status === 'scheduled' && <span className="badge">agendado</span>}
+          {isScheduled && <span className="badge">agendado</span>}
           {transaction.is_recurring && <span className="badge">recorrente</span>}
         </span>
         <span className="occurrence-date">
@@ -33,6 +39,11 @@ export default function TransactionRow({ transaction, category, onEdit, onDelete
         {formatCurrency(Number(transaction.amount))}
       </span>
       <div className="row-actions">
+        {canCancelRecurrence && (
+          <button className="btn-icon" onClick={onCancelRecurrence} title="Cancelar recorrência" type="button">
+            <CalendarX2 size={16} />
+          </button>
+        )}
         <button className="btn-icon" onClick={onEdit} type="button">
           <Pencil size={16} />
         </button>

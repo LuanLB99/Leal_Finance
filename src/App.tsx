@@ -4,6 +4,7 @@ import Layout from './components/Layout'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Transactions from './pages/Transactions'
+import Projection from './pages/Projection'
 
 function PrivateArea() {
   const { session, loading } = useAuth()
@@ -16,6 +17,7 @@ function PrivateArea() {
       <Route element={<Layout />}>
         <Route index element={<Dashboard />} />
         <Route path="transacoes" element={<Transactions />} />
+        <Route path="projecao" element={<Projection />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
