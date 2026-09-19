@@ -1,11 +1,11 @@
 -- Leal Finance - schema inicial
 -- Rode este arquivo inteiro no SQL Editor do seu projeto Supabase (Database > SQL Editor > New query)
+-- Categorias sao GLOBAIS do sistema (nao por usuario): só o admin cria/edita/remove, direto por aqui.
 
--- 1) Categorias
+-- 1) Categorias (globais, somente leitura para o app)
 create table if not exists public.categories (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
-  name text not null,
+  name text not null unique,
   icon text not null default 'circle',
   color text not null default '#6366f1',
   type text not null default 'expense' check (type in ('income', 'expense', 'both')),
@@ -29,20 +29,17 @@ create table if not exists public.transactions (
 );
 
 create index if not exists transactions_user_date_idx on public.transactions (user_id, date);
-create index if not exists categories_user_idx on public.categories (user_id);
 
--- 3) RLS: cada usuário só vê/edita os próprios dados
+-- 3) RLS
 alter table public.categories enable row level security;
 alter table public.transactions enable row level security;
 
-drop policy if exists "categories_select_own" on public.categories;
-create policy "categories_select_own" on public.categories for select using (auth.uid() = user_id);
-drop policy if exists "categories_insert_own" on public.categories;
-create policy "categories_insert_own" on public.categories for insert with check (auth.uid() = user_id);
-drop policy if exists "categories_update_own" on public.categories;
-create policy "categories_update_own" on public.categories for update using (auth.uid() = user_id);
-drop policy if exists "categories_delete_own" on public.categories;
-create policy "categories_delete_own" on public.categories for delete using (auth.uid() = user_id);
+-- Categorias: qualquer usuário autenticado só LÊ. Sem policy de insert/update/delete
+-- de propósito -- com RLS ativo, isso bloqueia escrita para anon/authenticated.
+-- Só o admin, pelo SQL Editor (roda como postgres e ignora RLS), gerencia categorias.
+drop policy if exists "categories_select_all" on public.categories;
+create policy "categories_select_all" on public.categories
+  for select using (auth.role() = 'authenticated');
 
 drop policy if exists "transactions_select_own" on public.transactions;
 create policy "transactions_select_own" on public.transactions for select using (auth.uid() = user_id);
@@ -53,32 +50,19 @@ create policy "transactions_update_own" on public.transactions for update using 
 drop policy if exists "transactions_delete_own" on public.transactions;
 create policy "transactions_delete_own" on public.transactions for delete using (auth.uid() = user_id);
 
--- 4) Ao criar um novo usuário, semear categorias padrão automaticamente
-create or replace function public.handle_new_user_categories()
-returns trigger
-language plpgsql
-security definer set search_path = public
-as $$
-begin
-  insert into public.categories (user_id, name, icon, color, type) values
-    (new.id, 'Alimentação', 'utensils', '#f97316', 'expense'),
-    (new.id, 'Transporte', 'car', '#3b82f6', 'expense'),
-    (new.id, 'Moradia', 'home', '#8b5cf6', 'expense'),
-    (new.id, 'Saúde', 'heart-pulse', '#ef4444', 'expense'),
-    (new.id, 'Educação', 'graduation-cap', '#06b6d4', 'expense'),
-    (new.id, 'Lazer', 'party-popper', '#ec4899', 'expense'),
-    (new.id, 'Compras', 'shopping-bag', '#f59e0b', 'expense'),
-    (new.id, 'Contas e Assinaturas', 'receipt', '#64748b', 'expense'),
-    (new.id, 'Mercado', 'shopping-cart', '#84cc16', 'expense'),
-    (new.id, 'Salário', 'wallet', '#22c55e', 'income'),
-    (new.id, 'Investimentos', 'trending-up', '#14b8a6', 'income'),
-    (new.id, 'Presente', 'gift', '#d946ef', 'both'),
-    (new.id, 'Outros', 'circle-ellipsis', '#6b7280', 'both');
-  return new;
-end;
-$$;
-
-drop trigger if exists on_auth_user_created_categories on auth.users;
-create trigger on_auth_user_created_categories
-  after insert on auth.users
-  for each row execute function public.handle_new_user_categories();
+-- 4) Conjunto padrão de categorias globais
+insert into public.categories (name, icon, color, type) values
+  ('Alimentação', 'utensils', '#f97316', 'expense'),
+  ('Transporte', 'car', '#3b82f6', 'expense'),
+  ('Moradia', 'home', '#8b5cf6', 'expense'),
+  ('Saúde', 'heart-pulse', '#ef4444', 'expense'),
+  ('Educação', 'graduation-cap', '#06b6d4', 'expense'),
+  ('Lazer', 'party-popper', '#ec4899', 'expense'),
+  ('Compras', 'shopping-bag', '#f59e0b', 'expense'),
+  ('Contas e Assinaturas', 'receipt', '#64748b', 'expense'),
+  ('Mercado', 'shopping-cart', '#84cc16', 'expense'),
+  ('Salário', 'wallet', '#22c55e', 'income'),
+  ('Investimentos', 'trending-up', '#14b8a6', 'income'),
+  ('Presente', 'gift', '#d946ef', 'both'),
+  ('Outros', 'circle-ellipsis', '#6b7280', 'both')
+on conflict (name) do nothing;

@@ -1,0 +1,68 @@
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+.page-header h2 { margin: 0; }
+.page-header-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+.active-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  margin-bottom: 1rem;
+}
+.active-filter button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  background: none;
+  border: none;
+  color: inherit;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+/* Modal / form */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 18, 25, 0.4);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1rem;
+  overflow-y: auto;
+  z-index: 20;
+}
+
+.modal-card {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.modal-header { display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { margin: 0; }
+
+.modal-card label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+.checkbox-label { flex-direction: row !important; align-items: center; gap: 0.5rem !important; }
+
+.type-toggle { display: flex; background: var(--bg); border-radius: 8px; padding: 0.25rem; }
+.type-toggle button {
+  flex: 1;
+  border: none;
+  background: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.type-toggle button.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
