@@ -1,5 +1,5 @@
 import {
-  addWeeks, addMonths, addYears, isAfter, isBefore, isEqual, startOfDay,
+  addWeeks, addMonths, addYears, format, isAfter, isBefore, isEqual, startOfDay,
 } from 'date-fns'
 import type { Occurrence, Period, Transaction } from '../types'
 
@@ -42,7 +42,7 @@ export function expandOccurrences(
       if (!isBefore(cursor, start)) {
         result.push({
           ...tx,
-          occurrence_date: cursor.toISOString().slice(0, 10),
+          occurrence_date: format(cursor, 'yyyy-MM-dd'),
           is_virtual: !isEqual(cursor, anchor),
         })
       }

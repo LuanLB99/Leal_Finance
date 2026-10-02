@@ -1,0 +1,35 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [main]
+
+env:
+  VERCEL_ORG_ID: team_1gK9GxIaoMIAm5i2vpshsdMG
+  VERCEL_PROJECT_ID: prj_zcExJKowAPNFBTcGA3ToV9xjwVfP
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Roda a mesma checagem de qualidade do CI antes de publicar, como
+      # segunda trava de segurança caso algo chegue na main sem passar por PR.
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+      - run: npm install --global vercel@latest
+
+      # `vercel pull` traz as env vars (VITE_SUPABASE_URL etc.) já configuradas
+      # no projeto Vercel, então não precisamos duplicá-las como secrets aqui.
+      - run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

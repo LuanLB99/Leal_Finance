@@ -12,8 +12,17 @@ import type { Transaction } from '../types'
 type ModalState = { mode: 'create' } | { mode: 'edit'; transaction: Transaction }
 
 function toFormInput(tx: Transaction): TransactionInput {
-  const { id: _id, user_id: _userId, created_at: _createdAt, ...rest } = tx
-  return rest
+  return {
+    category_id: tx.category_id,
+    description: tx.description,
+    amount: tx.amount,
+    type: tx.type,
+    date: tx.date,
+    status: tx.status,
+    is_recurring: tx.is_recurring,
+    recurrence_frequency: tx.recurrence_frequency,
+    recurrence_end_date: tx.recurrence_end_date,
+  }
 }
 
 export default function Transactions() {
